@@ -753,24 +753,48 @@
                   <span className="hint-icon">✅</span>
                   Your ID card is ready! Download or print it below.
                 </div>
-                <button
-                  className="btn-download-pdf"
-                  onClick={() => {
-                    const card = document.querySelector('.id-card');
-                    if (!card) return;
-                    let printArea = document.getElementById('print-area');
-                    if (!printArea) {
-                      printArea = document.createElement('div');
-                      printArea.id = 'print-area';
-                      document.body.appendChild(printArea);
-                    }
-                    printArea.innerHTML = '';
-                    printArea.appendChild(card.cloneNode(true));
-                    window.print();
-                  }}
-                >
-                  ⬇️ Download / Print ID Card
-                </button>
+                <div style={{display:'flex', gap:'.75rem'}}>
+                  <button
+                    className="btn-download-pdf"
+                    style={{background:'linear-gradient(135deg,#1a3a6e,#2d5fa6)'}}
+                    onClick={() => {
+                      const card = document.querySelector('.id-card');
+                      if (!card) return;
+                      let printArea = document.getElementById('print-area');
+                      if (!printArea) {
+                        printArea = document.createElement('div');
+                        printArea.id = 'print-area';
+                        document.body.appendChild(printArea);
+                      }
+                      printArea.innerHTML = '';
+                      printArea.appendChild(card.cloneNode(true));
+                      window.print();
+                    }}
+                  >
+                    🖨️ Print
+                  </button>
+                  <button
+                    className="btn-download-pdf"
+                    style={{background:'linear-gradient(135deg,#c8a84b,#f0d882)', color:'#1a1a1a'}}
+                    onClick={() => {
+                      const card = document.querySelector('.id-card');
+                      if (!card) return;
+                      let printArea = document.getElementById('print-area');
+                      if (!printArea) {
+                        printArea = document.createElement('div');
+                        printArea.id = 'print-area';
+                        document.body.appendChild(printArea);
+                      }
+                      printArea.innerHTML = '';
+                      printArea.appendChild(card.cloneNode(true));
+                      const cleanup = () => { printArea.innerHTML = ''; window.removeEventListener('afterprint', cleanup); };
+                      window.addEventListener('afterprint', cleanup);
+                      window.print();
+                    }}
+                  >
+                    ⬇️ Save as PDF
+                  </button>
+                </div>
               </>
             ) : (
               <div className="preview-hint">
