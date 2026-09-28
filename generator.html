@@ -8,7 +8,8 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     .gen-page {
       min-height: 100vh;
@@ -776,20 +777,30 @@
                   <button
                     className="btn-download-pdf"
                     style={{background:'linear-gradient(135deg,#c8a84b,#f0d882)', color:'#1a1a1a'}}
-                    onClick={() => {
+                    onClick={async () => {
                       const card = document.querySelector('.id-card');
                       if (!card) return;
-                      let printArea = document.getElementById('print-area');
-                      if (!printArea) {
-                        printArea = document.createElement('div');
-                        printArea.id = 'print-area';
-                        document.body.appendChild(printArea);
+                      const btn = document.querySelectorAll('.btn-download-pdf')[1];
+                      btn.disabled = true;
+                      btn.textContent = '⏳ Generating...';
+                      try {
+                        const canvas = await html2canvas(card, {
+                          scale: 3,
+                          useCORS: true,
+                          backgroundColor: '#ffffff',
+                          logging: false
+                        });
+                        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                        const { jsPDF } = window.jspdf;
+                        // Credit card size: 85.6 x 54 mm landscape
+                        const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [85.6, 54] });
+                        pdf.addImage(imgData, 'JPEG', 0, 0, 85.6, 54);
+                        pdf.save('college-id-card.pdf');
+                      } catch(e) {
+                        alert('PDF generation failed. Please try again.');
                       }
-                      printArea.innerHTML = '';
-                      printArea.appendChild(card.cloneNode(true));
-                      const cleanup = () => { printArea.innerHTML = ''; window.removeEventListener('afterprint', cleanup); };
-                      window.addEventListener('afterprint', cleanup);
-                      window.print();
+                      btn.disabled = false;
+                      btn.innerHTML = '⬇️ Save as PDF';
                     }}
                   >
                     ⬇️ Save as PDF
