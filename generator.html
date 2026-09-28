@@ -8,6 +8,7 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     .gen-page {
       min-height: 100vh;
@@ -344,6 +345,29 @@
       color: var(--text-muted);
     }
     .preview-hint .hint-icon { font-size: 1rem; }
+
+    /* Download button */
+    .btn-download-pdf {
+      margin-top: 1rem;
+      width: 100%;
+      padding: .85rem;
+      background: linear-gradient(135deg, #1a3a6e, #2d5fa6);
+      border: none;
+      border-radius: 12px;
+      font-size: .9rem;
+      font-family: inherit;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      letter-spacing: .3px;
+    }
+    .btn-download-pdf:hover { opacity: 0.88; }
+    .btn-download-pdf:disabled { opacity: 0.6; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -667,8 +691,35 @@
 
             <div className="preview-hint">
               <span className="hint-icon">💡</span>
-              The card updates in real-time. Hover over it for a 3D effect. Use <strong>Ctrl+P</strong> to print.
+              The card updates in real-time. Hover over it for a 3D effect.
             </div>
+
+            <button
+              className="btn-download-pdf"
+              onClick={() => {
+                const card = document.querySelector('.id-card');
+                if (!card) return;
+                const btn = document.querySelector('.btn-download-pdf');
+                btn.disabled = true;
+                btn.textContent = '⏳ Generating PDF...';
+                html2pdf()
+                  .set({
+                    margin: 10,
+                    filename: 'college-id-card.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 3, useCORS: true },
+                    jsPDF: { unit: 'mm', format: [100, 65], orientation: 'landscape' }
+                  })
+                  .from(card)
+                  .save()
+                  .then(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '⬇️ Download as PDF';
+                  });
+              }}
+            >
+              ⬇️ Download as PDF
+            </button>
           </div>
         </div>
       </div>
