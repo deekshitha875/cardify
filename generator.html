@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ID Card Generator — Cardify</title>
+  <link rel="stylesheet" href="style.css" />
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    .gen-page {
+      min-height: 100vh;
+      padding: calc(var(--nav-h) + 3rem) 2rem 4rem;
+      position: relative;
+      z-index: 1;
+    }
+    .gen-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .gen-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .gen-layout { grid-template-columns: 1fr; }
+    }
+
+    /* ── Form Panel ──────────────────────────────────── */
+    .form-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      backdrop-filter: blur(20px);
+    }
+    .panel-head {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-head-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 14px rgba(26,58,110,0.4);
+    }
+    .panel-head h2 { font-size: 1.1rem; font-weight: 700; }
+    .panel-head p  { font-size: .78rem; color: var(--text-muted); margin-top: .15rem; }
+
+    /* Progress bar */
+    .progress-wrap { margin-bottom: 1.5rem; }
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: .4rem;
+    }
+    .progress-track {
+      height: 6px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--primary-light), var(--accent), var(--neon));
+      transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+      background-size: 200% auto;
+      animation: shimmer 3s linear infinite;
+    }
+
+    /* Form grid */
+    .fg {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .fg .full { grid-column: 1 / -1; }
+
+    /* Section divider */
+    .form-section-label {
+      grid-column: 1 / -1;
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--accent);
+      padding: .75rem 0 .25rem;
+      border-top: 1px solid var(--border);
+      margin-top: .25rem;
+    }
+
+    /* Photo upload */
+    .photo-upload {
+      grid-column: 1 / -1;
+      border: 2px dashed rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .photo-upload:hover {
+      border-color: rgba(200,168,75,0.4);
+      background: rgba(200,168,75,0.04);
+    }
+    .photo-upload input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    }
+    .upload-label { font-size: .85rem; color: var(--text-muted); pointer-events: none; }
+    .upload-label .icon { font-size: 2rem; margin-bottom: .3rem; }
+    .upload-thumb {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+      margin: 0 auto .4rem;
+      display: block;
+    }
+
+    /* Reset btn */
+    .btn-reset-form {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: .7rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: .85rem;
+      font-family: inherit;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn-reset-form:hover {
+      border-color: rgba(239,68,68,0.5);
+      color: #ef4444;
+      background: rgba(239,68,68,0.06);
+    }
+
+    /* ── ID Card Preview ─────────────────────────────── */
+    .preview-col {
+      position: sticky;
+      top: calc(var(--nav-h) + 1.5rem);
+    }
+    .preview-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      backdrop-filter: blur(20px);
+    }
+    .preview-scene {
+      perspective: 1000px;
+      margin: 1rem 0;
+    }
+    .id-card-wrapper {
+      transform-style: preserve-3d;
+      transition: transform 0.15s ease;
+      cursor: pointer;
+    }
+
+    /* ID Card */
+    .id-card {
+      width: 100%;
+      max-width: 380px;
+      margin: 0 auto;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(200,168,75,0.1);
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+      background: #fff;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: box-shadow 0.3s ease;
+    }
+    .id-card:hover { box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(200,168,75,0.2); }
+    .card-hdr {
+      background: linear-gradient(135deg, #1a3a6e 0%, #2d5fa6 100%);
+      padding: 1.2rem 1.4rem .9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-hdr::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 110px; height: 110px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.08);
+    }
+    .card-hdr::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; left: 40px;
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: rgba(200,168,75,.15);
+    }
+    .card-college { z-index: 1; }
+    .card-college-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      color: #fff;
+      line-height: 1.2;
+      max-width: 190px;
+    }
+    .card-college-tag {
+      font-size: .62rem;
+      color: rgba(255,255,255,.65);
+      margin-top: .15rem;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+    .card-logo-circle {
+      z-index: 1;
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.15);
+      border: 2px solid rgba(255,255,255,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .card-stripe { height: 5px; background: linear-gradient(90deg, #c8a84b, #f0d882, #c8a84b); }
+    .card-body-area {
+      padding: 1.4rem;
+      display: flex;
+      gap: 1.1rem;
+      align-items: flex-start;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-body-area::before {
+      content: 'STUDENT';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%) rotate(-30deg);
+      font-size: 5rem; font-weight: 900;
+      color: rgba(26,58,110,.04);
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: .3em;
+    }
+    .card-avatar-col { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: .5rem; }
+    .card-avatar-img {
+      width: 84px; height: 84px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 3px solid #c8a84b;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    }
+    .card-avatar-placeholder {
+      width: 84px; height: 84px;
+      border-radius: 12px;
+      border: 3px dashed #c8a84b;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.2rem; color: #c8a84b; background: #fafafa;
+    }
+    .card-degree-badge {
+      font-size: .58rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: #1a3a6e;
+      color: white;
+      padding: .2rem .5rem;
+      border-radius: 4px;
+      white-space: nowrap;
+      max-width: 84px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+    }
+    .card-info-col { flex: 1; min-width: 0; }
+    .card-student-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #1a3a6e;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+    .card-student-name.ph { color: #cbd5e1; }
+    .card-info-rows { margin-top: .55rem; display: flex; flex-direction: column; gap: .28rem; }
+    .card-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: .4rem;
+      font-size: .74rem;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: .22rem;
+    }
+    .card-info-row:last-child { border: none; }
+    .ci-label { color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; flex-shrink: 0; }
+    .ci-value { font-weight: 600; color: #1e293b; text-align: right; word-break: break-word; }
+    .ci-value.ph { color: #e2e8f0; }
+    .card-footer-area {
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      padding: .8rem 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem;
+    }
+    .card-validity { font-size: .7rem; }
+    .cv-label { color: #64748b; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; }
+    .cv-value { color: #1e293b; font-weight: 700; margin-top: .1rem; }
+    .cv-value.ph { color: #e2e8f0; }
+    .card-barcode { display: flex; flex-direction: column; align-items: center; gap: .2rem; }
+    .barcode-bars { display: flex; gap: 2px; align-items: flex-end; height: 28px; }
+    .barcode-bars span { display: inline-block; width: 2px; background: #1a3a6e; border-radius: 1px; opacity: .7; }
+    .barcode-num { font-size: .58rem; color: #64748b; letter-spacing: 1.5px; font-family: monospace; }
+
+    /* Print/download hint */
+    .preview-hint {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin-top: 1rem;
+      padding: .75rem 1rem;
+      background: rgba(0,212,255,0.06);
+      border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 10px;
+      font-size: .78rem;
+      color: var(--text-muted);
+    }
+    .preview-hint .hint-icon { font-size: 1rem; }
+  </style>
+</head>
+<body>
+<div class="cursor-glow" id="cursorGlow"></div>
+<canvas id="particle-canvas"></canvas>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">🎓</div>
+      Cardify
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html" class="nav-link">Home</a></li>
+      <li><a href="how-it-works.html" class="nav-link">How It Works</a></li>
+      <li><a href="generator.html" class="nav-link active">Generator</a></li>
+      <li><a href="about.html" class="nav-link">About</a></li>
+      <li><a href="generator.html" class="nav-cta btn">✦ Generate ID</a></li>
+    </ul>
+    <button class="nav-mobile-btn" id="mobileBtn">☰</button>
+  </div>
+</nav>
+
+<!-- Orbs -->
+<div class="orb orb-blue"   style="position:fixed;width:500px;height:500px;top:-100px;left:-200px;opacity:.3;z-index:0;"></div>
+<div class="orb orb-gold"   style="position:fixed;width:400px;height:400px;bottom:0;right:-100px;opacity:.2;z-index:0;"></div>
+
+<div class="gen-page">
+  <div class="gen-header reveal">
+    <div class="section-tag">🪪 ID Generator</div>
+    <h1 class="section-heading">Create Your <span>College ID Card</span></h1>
+    <p class="section-subtext" style="margin: .75rem auto 0;">Fill in your details on the left. Your professional ID card renders live on the right.</p>
+  </div>
+
+  <!-- React root -->
+  <div id="gen-root"></div>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="nav-logo"><div class="nav-logo-icon">🎓</div> Cardify</div>
+      <p>Professional college ID cards, generated instantly.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Pages</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="generator.html">Generator</a></li>
+        <li><a href="how-it-works.html">How It Works</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Info</h4>
+      <ul>
+        <li><a href="about.html">About Cardify</a></li>
+        <li><a href="about.html">Tech Stack</a></li>
+        <li><a href="how-it-works.html">Quick Guide</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Cardify · All rights reserved</span>
+    <div class="footer-badges">
+      <span class="footer-badge">⚡ React 18</span>
+      <span class="footer-badge">🔒 No Data Stored</span>
+    </div>
+  </div>
+</footer>
+
+<!-- React App -->
+<script type="text/babel">
+  const { useState, useCallback, useRef } = React;
+
+  const DEPTS = ["Computer Science","Electrical Engineering","Mechanical Engineering","Civil Engineering","Business Administration","Economics","Mathematics","Physics","Chemistry","Biology","Psychology","Philosophy","Literature","Fine Arts"];
+  const PROGS = ["B.Sc.","B.A.","B.E.","B.Tech.","M.Sc.","M.A.","MBA","Ph.D."];
+  const YEARS = ["1st Year","2nd Year","3rd Year","4th Year","5th Year"];
+
+  const INIT = {
+    collegeName:"", firstName:"", lastName:"", studentId:"",
+    department:"", program:"", year:"", email:"", validUntil:"",
+  };
+
+  /* ── FormField component ────────────────────────────── */
+  function FormField({ label, id, type="text", value, onChange, options=null, placeholder="" }) {
+    const filled = value && value.trim() !== "";
+    if (type === "select") return (
+      <div className="form-field">
+        <label htmlFor={id}>{label}</label>
+        <select id={id} value={value} onChange={e => onChange(e.target.value)} className={filled ? "filled" : ""}>
+          <option value="">— Select —</option>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      </div>
+    );
+    return (
+      <div className="form-field">
+        <label htmlFor={id}>{label}</label>
+        <input id={id} type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className={filled ? "filled" : ""} />
+      </div>
+    );
+  }
+
+  /* ── Avatar component ───────────────────────────────── */
+  function CardAvatar({ src }) {
+    if (src) return <img src={src} className="card-avatar-img" alt="Student" />;
+    return <div className="card-avatar-placeholder">🎓</div>;
+  }
+
+  /* ── Barcode component ──────────────────────────────── */
+  function Barcode({ seed }) {
+    const bars = Array.from({ length: 20 }, (_, i) => {
+      const c = (seed.charCodeAt(i % Math.max(seed.length, 1)) || 50) + i * 7;
+      return 7 + (c % 21);
+    });
+    const code = seed.toUpperCase().replace(/\s/g,"").slice(0,12).padEnd(12,"0");
+    return (
+      <div className="card-barcode">
+        <div className="barcode-bars">{bars.map((h,i) => <span key={i} style={{height:`${h}px`}} />)}</div>
+        <div className="barcode-num">{seed.length > 0 ? code : "············"}</div>
+      </div>
+    );
+  }
+
+  /* ── InfoRow component ──────────────────────────────── */
+  function InfoRow({ label, value, ph = "—" }) {
+    return (
+      <div className="card-info-row">
+        <span className="ci-label">{label}</span>
+        <span className={`ci-value ${!value ? "ph" : ""}`}>{value || ph}</span>
+      </div>
+    );
+  }
+
+  /* ── IDCard component ───────────────────────────────── */
+  function IDCard({ data, photo, tiltRef }) {
+    const { collegeName, firstName, lastName, studentId, department, program, year, email, validUntil } = data;
+    const fullName = [firstName, lastName].filter(Boolean).join(" ");
+    const college  = collegeName || "Your College Name";
+    const seed     = studentId || firstName || "student";
+    const validStr = validUntil
+      ? new Date(validUntil + "-01").toLocaleDateString("en-US", { month:"short", year:"numeric" })
+      : null;
+
+    return (
+      <div className="preview-scene">
+        <div className="id-card-wrapper" ref={tiltRef}>
+          <div className="id-card">
+            {/* Header */}
+            <div className="card-hdr">
+              <div className="card-college">
+                <div className="card-college-name">{college}</div>
+                <div className="card-college-tag">Official Student Identity Card</div>
+              </div>
+              <div className="card-logo-circle">🏛️</div>
+            </div>
+            {/* Gold stripe */}
+            <div className="card-stripe" />
+            {/* Body */}
+            <div className="card-body-area">
+              <div className="card-avatar-col">
+                <CardAvatar src={photo} />
+                <div className="card-degree-badge">{program || "Student"}</div>
+              </div>
+              <div className="card-info-col">
+                <div className={`card-student-name ${!fullName ? "ph" : ""}`}>{fullName || "Full Name"}</div>
+                <div className="card-info-rows">
+                  <InfoRow label="ID No." value={studentId} />
+                  <InfoRow label="Dept."  value={department} />
+                  <InfoRow label="Year"   value={year} />
+                  <InfoRow label="Email"  value={email} />
+                </div>
+              </div>
+            </div>
+            {/* Footer */}
+            <div className="card-footer-area">
+              <div className="card-validity">
+                <div className="cv-label">Valid Until</div>
+                <div className={`cv-value ${!validStr ? "ph" : ""}`}>{validStr || "MM / YYYY"}</div>
+              </div>
+              <Barcode seed={seed} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Progress Bar ───────────────────────────────────── */
+  function ProgressBar({ fields }) {
+    const filled = fields.filter(v => v && v.trim() !== "").length;
+    const pct    = Math.round((filled / fields.length) * 100);
+    const msg    = pct === 0 ? "Start filling in your details"
+                 : pct < 40 ? "Keep going…"
+                 : pct < 75 ? "Looking great!"
+                 : pct < 100 ? "Almost done!"
+                 : "Your card is complete 🎉";
+    return (
+      <div className="progress-wrap">
+        <div className="progress-row"><span>{msg}</span><span>{pct}%</span></div>
+        <div className="progress-track">
+          <div className="progress-fill" style={{ width: `${pct}%` }} />
+        </div>
+      </div>
+    );
+  }
+
+  /* ── PhotoUpload ────────────────────────────────────── */
+  function PhotoUpload({ photo, onChange }) {
+    const handleFile = e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = ev => onChange(ev.target.result);
+      reader.readAsDataURL(f);
+    };
+    return (
+      <div className="photo-upload">
+        <input type="file" accept="image/*" onChange={handleFile} />
+        {photo ? (
+          <>
+            <img src={photo} className="upload-thumb" alt="Preview" />
+            <div className="upload-label">Click to change photo</div>
+          </>
+        ) : (
+          <div className="upload-label">
+            <div className="icon">📷</div>
+            Click to upload student photo
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  /* ── App ────────────────────────────────────────────── */
+  function App() {
+    const [form, setForm] = useState(INIT);
+    const [photo, setPhoto] = useState(null);
+    const tiltRef = useRef(null);
+    const wrapRef = useRef(null);
+
+    const update = useCallback(field => value => setForm(p => ({ ...p, [field]: value })), []);
+    const reset  = () => { setForm(INIT); setPhoto(null); };
+
+    // 3D tilt on mouse move
+    const handleMouseMove = e => {
+      if (!tiltRef.current || !wrapRef.current) return;
+      const r = wrapRef.current.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width  - 0.5;
+      const y = (e.clientY - r.top)  / r.height - 0.5;
+      tiltRef.current.style.transform = `rotateY(${x * 18}deg) rotateX(${-y * 18}deg) scale(1.02)`;
+    };
+    const handleMouseLeave = () => {
+      if (tiltRef.current) tiltRef.current.style.transform = '';
+    };
+
+    return (
+      <div className="gen-layout">
+        {/* ── Form ── */}
+        <div className="form-panel">
+          <div className="panel-head">
+            <div className="panel-head-icon">📋</div>
+            <div>
+              <h2>Student Details</h2>
+              <p>All fields update the card instantly</p>
+            </div>
+          </div>
+
+          <ProgressBar fields={Object.values(form)} />
+
+          <div className="fg">
+            {/* College info */}
+            <div className="form-section-label">🏛️ Institution</div>
+            <div className="full">
+              <FormField label="College / University Name" id="collegeName" value={form.collegeName} onChange={update("collegeName")} placeholder="e.g. State University" />
+            </div>
+
+            {/* Personal */}
+            <div className="form-section-label">👤 Personal Info</div>
+            <FormField label="First Name"   id="firstName"  value={form.firstName}  onChange={update("firstName")}  placeholder="Alice" />
+            <FormField label="Last Name"    id="lastName"   value={form.lastName}   onChange={update("lastName")}   placeholder="Johnson" />
+            <div className="full">
+              <FormField label="Email Address" id="email" type="email" value={form.email} onChange={update("email")} placeholder="alice@university.edu" />
+            </div>
+
+            {/* Academic */}
+            <div className="form-section-label">🎓 Academic Details</div>
+            <FormField label="Student ID"    id="studentId"  value={form.studentId}  onChange={update("studentId")}  placeholder="CS2024001" />
+            <FormField label="Valid Until"   id="validUntil" type="month" value={form.validUntil} onChange={update("validUntil")} />
+            <FormField label="Department"    id="department" type="select" value={form.department} onChange={update("department")} options={DEPTS} />
+            <FormField label="Degree"        id="program"    type="select" value={form.program}    onChange={update("program")}    options={PROGS} />
+            <div className="full">
+              <FormField label="Year of Study" id="year" type="select" value={form.year} onChange={update("year")} options={YEARS} />
+            </div>
+
+            {/* Photo */}
+            <div className="form-section-label">📸 Photo</div>
+            <PhotoUpload photo={photo} onChange={setPhoto} />
+          </div>
+
+          <button className="btn-reset-form" onClick={reset}>↺ Reset All Fields</button>
+        </div>
+
+        {/* ── Preview ── */}
+        <div className="preview-col">
+          <div className="preview-panel">
+            <div className="panel-head">
+              <div className="panel-head-icon">🪪</div>
+              <div>
+                <h2>Live Preview</h2>
+                <p>Hover over the card to rotate it in 3D</p>
+              </div>
+            </div>
+
+            <div ref={wrapRef} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
+              <IDCard data={form} photo={photo} tiltRef={tiltRef} />
+            </div>
+
+            <div className="preview-hint">
+              <span className="hint-icon">💡</span>
+              The card updates in real-time. Hover over it for a 3D effect. Use <strong>Ctrl+P</strong> to print.
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('gen-root')).render(<App />);
+</script>
+
+<script>
+  /* Navbar */
+  const nb = document.getElementById('navbar');
+  window.addEventListener('scroll', () => nb.classList.toggle('scrolled', window.scrollY > 20));
+  document.getElementById('mobileBtn').addEventListener('click', () => document.getElementById('navLinks').classList.toggle('open'));
+
+  /* Cursor glow */
+  const glow = document.getElementById('cursorGlow');
+  document.addEventListener('mousemove', e => { glow.style.left = e.clientX+'px'; glow.style.top = e.clientY+'px'; });
+
+  /* Scroll reveal */
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  /* Particles */
+  const canvas = document.getElementById('particle-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+  const pts = Array.from({length:40}, () => ({
+    x: Math.random()*window.innerWidth, y: Math.random()*window.innerHeight,
+    r: Math.random()*1.2+0.4, dx:(Math.random()-.5)*.35, dy:(Math.random()-.5)*.35,
+    op: Math.random()*.4+.1
+  }));
+  (function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pts.forEach(p => {
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(200,168,75,${p.op})`; ctx.fill();
+      p.x+=p.dx; p.y+=p.dy;
+      if(p.x<0||p.x>canvas.width) p.dx*=-1;
+      if(p.y<0||p.y>canvas.height) p.dy*=-1;
+    });
+    requestAnimationFrame(draw);
+  })();
+</script>
+</body>
+</html>

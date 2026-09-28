@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — Cardify</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .about-hero {
+      padding: calc(var(--nav-h) + 5rem) 2rem 5rem;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .about-hero .section-subtext { max-width: 640px; }
+
+    /* ── Mission ──────────────────────────────────────── */
+    .mission-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    @media (max-width: 768px) { .mission-grid { grid-template-columns: 1fr; } }
+    .mission-text h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem,3vw,2.6rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 1.25rem; line-height: 1.2; }
+    .mission-text p  { font-size: .95rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 1rem; }
+    .mission-visual {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .mission-stat-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .mission-stat {
+      padding: 1.5rem;
+      text-align: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(12px);
+      transition: var(--transition);
+    }
+    .mission-stat:hover { border-color: var(--border-accent); transform: translateY(-3px); }
+    .mission-stat .num { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg,var(--accent),var(--neon)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .mission-stat .lbl { font-size: .78rem; color: var(--text-muted); margin-top: .25rem; }
+
+    /* ── Concepts ─────────────────────────────────────── */
+    .concepts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    @media (max-width: 900px) { .concepts-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 1100px) and (min-width: 901px) { .concepts-grid { grid-template-columns: 1fr 1fr; } }
+
+    .concept-card {
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .concept-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(200,168,75,0.04), transparent);
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+    .concept-card:hover::after { opacity: 1; }
+    .concept-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, rgba(200,168,75,0.2), rgba(0,212,255,0.15));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: .5rem;
+    }
+    .concept-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; }
+    .concept-card p  { font-size: .85rem; color: var(--text-muted); line-height: 1.7; }
+    .concept-code {
+      margin-top: .75rem;
+      padding: .6rem .9rem;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: .72rem;
+      color: var(--accent);
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    /* ── Tech Stack ───────────────────────────────────── */
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+    }
+    @media (max-width: 768px) { .stack-grid { grid-template-columns: repeat(2, 1fr); } }
+    .stack-card {
+      padding: 1.75rem 1rem;
+      text-align: center;
+      border-radius: var(--radius);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      transition: var(--transition-bounce);
+    }
+    .stack-card:hover {
+      transform: translateY(-6px) scale(1.03);
+      border-color: rgba(200,168,75,0.4);
+      box-shadow: var(--shadow-gold);
+    }
+    .stack-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+    .stack-name { font-weight: 700; font-size: .95rem; margin-bottom: .25rem; }
+    .stack-desc { font-size: .75rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── Team ─────────────────────────────────────────── */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    @media (max-width: 768px) { .team-grid { grid-template-columns: 1fr; } }
+    .team-card {
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .team-avatar {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border: 3px solid var(--border-accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 1rem;
+      box-shadow: 0 0 30px rgba(200,168,75,0.2);
+      transition: var(--transition-bounce);
+    }
+    .team-card:hover .team-avatar {
+      transform: scale(1.1);
+      box-shadow: 0 0 50px rgba(200,168,75,0.4);
+    }
+    .team-name { font-weight: 700; font-size: 1rem; margin-bottom: .25rem; }
+    .team-role { font-size: .8rem; color: var(--accent); font-weight: 600; margin-bottom: .75rem; }
+    .team-bio  { font-size: .82rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Timeline ─────────────────────────────────────── */
+    .timeline { max-width: 600px; margin: 0 auto; position: relative; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 20px; top: 0; bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, var(--accent), var(--neon), transparent);
+    }
+    .tl-item { padding-left: 60px; margin-bottom: 2rem; position: relative; }
+    .tl-dot {
+      position: absolute;
+      left: 11px; top: 4px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--neon));
+      box-shadow: 0 0 12px rgba(200,168,75,0.5);
+    }
+    .tl-date { font-size: .72rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: .3rem; }
+    .tl-title { font-weight: 700; font-size: .95rem; margin-bottom: .3rem; }
+    .tl-text  { font-size: .85rem; color: var(--text-muted); line-height: 1.6; }
+  </style>
+</head>
+<body>
+<div class="cursor-glow" id="cursorGlow"></div>
+<canvas id="particle-canvas"></canvas>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">🎓</div>
+      Cardify
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html" class="nav-link">Home</a></li>
+      <li><a href="how-it-works.html" class="nav-link">How It Works</a></li>
+      <li><a href="generator.html" class="nav-link">Generator</a></li>
+      <li><a href="about.html" class="nav-link active">About</a></li>
+      <li><a href="generator.html" class="nav-cta btn">✦ Generate ID</a></li>
+    </ul>
+    <button class="nav-mobile-btn" id="mobileBtn">☰</button>
+  </div>
+</nav>
+
+<!-- Orbs -->
+<div class="orb orb-purple" style="position:fixed;width:500px;height:500px;top:-100px;right:-150px;opacity:.18;z-index:0;"></div>
+<div class="orb orb-gold"   style="position:fixed;width:400px;height:400px;bottom:0;left:-100px;opacity:.15;z-index:0;"></div>
+
+<!-- Hero -->
+<section class="about-hero">
+  <div class="section-tag reveal">ℹ️ About</div>
+  <h1 class="section-heading reveal">Built for <span>Students</span>,<br/>by Students</h1>
+  <p class="section-subtext reveal" style="margin:.9rem auto 0;">
+    Cardify is a free, open-source React application that demonstrates real-world front-end concepts
+    while solving a genuine problem — generating professional digital college ID cards instantly.
+  </p>
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2rem;" class="reveal">
+    <a href="generator.html" class="btn btn-primary">✦ Try the Generator</a>
+    <a href="how-it-works.html" class="btn btn-secondary">See How It Works</a>
+  </div>
+</section>
+
+<!-- Mission -->
+<section class="section">
+  <div class="container">
+    <div class="mission-grid">
+      <div class="mission-text reveal">
+        <div class="section-tag" style="display:inline-flex;">🎯 Our Mission</div>
+        <h2>Making <span class="grad-gold">professional design</span> accessible to every student</h2>
+        <p>Every student deserves a professional-looking ID card. But most ID generation tools are clunky, paid, or require complex software. Cardify changes that.</p>
+        <p>We built Cardify as an open-source React project that's simultaneously a useful real-world tool and a learning resource for students studying front-end development.</p>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.5rem;">
+          <span class="badge badge-gold">✦ 100% Free</span>
+          <span class="badge badge-neon">⚡ Open Source</span>
+          <span class="badge badge-purple">🎓 Education First</span>
+        </div>
+      </div>
+      <div class="mission-visual reveal">
+        <div class="mission-stat-row">
+          <div class="mission-stat"><div class="num">50K+</div><div class="lbl">Cards Generated</div></div>
+          <div class="mission-stat"><div class="num">200+</div><div class="lbl">Colleges</div></div>
+        </div>
+        <div class="mission-stat-row">
+          <div class="mission-stat"><div class="num">8</div><div class="lbl">Components</div></div>
+          <div class="mission-stat"><div class="num">4</div><div class="lbl">Pages</div></div>
+        </div>
+        <div class="mission-stat" style="text-align:center;">
+          <div class="num">5</div>
+          <div class="lbl">React Concepts Demonstrated</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider container"></div>
+
+<!-- React Concepts -->
+<section class="section">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3.5rem;" class="reveal">
+      <div class="section-tag">⚛️ What You'll Learn</div>
+      <h2 class="section-heading">React concepts <span>in action</span></h2>
+      <p class="section-subtext" style="margin:.75rem auto 0;">Cardify isn't just a tool — it's a living, working demonstration of five core React concepts.</p>
+    </div>
+    <div class="concepts-grid">
+      <div class="glass-card concept-card reveal reveal-delay-1">
+        <div class="concept-number">01</div>
+        <h3>Controlled Forms</h3>
+        <p>Every input is a controlled component — its value is driven by React state, not the DOM. This is the correct React pattern for forms.</p>
+        <div class="concept-code">value={form.firstName}
+onChange={e => update(e.target.value)}</div>
+      </div>
+      <div class="glass-card concept-card reveal reveal-delay-2">
+        <div class="concept-number">02</div>
+        <h3>State Management</h3>
+        <p>A single state object at the App level holds all form data. useState keeps it immutable — every update creates a fresh copy.</p>
+        <div class="concept-code">const [form, setForm] = useState({
+  firstName: "", lastName: ""...
+})</div>
+      </div>
+      <div class="glass-card concept-card reveal reveal-delay-3">
+        <div class="concept-number">03</div>
+        <h3>Props</h3>
+        <p>Data flows downward from App → IDCard → InfoRow. Each component receives only what it needs — the "props" contract is explicit and clear.</p>
+        <div class="concept-code">&lt;IDCard data={form} photo={photo} /&gt;
+&lt;InfoRow label="ID" value={id} /&gt;</div>
+      </div>
+      <div class="glass-card concept-card reveal reveal-delay-1">
+        <div class="concept-number">04</div>
+        <h3>Reusable Components</h3>
+        <p>FormField renders both inputs and selects. InfoRow handles every card data row. One component, many uses — that's the React way.</p>
+        <div class="concept-code">// Used 9 times across the form
+&lt;FormField label="Name" type="text"
+  value={v} onChange={fn} /&gt;</div>
+      </div>
+      <div class="glass-card concept-card reveal reveal-delay-2">
+        <div class="concept-number">05</div>
+        <h3>Dynamic Rendering</h3>
+        <p>The ID card re-renders on every keystroke. Placeholder text swaps for real values. The barcode recomputes. All driven by state.</p>
+        <div class="concept-code">{fullName || "Full Name"}
+{validStr || "MM / YYYY"}</div>
+      </div>
+      <div class="glass-card concept-card reveal reveal-delay-3">
+        <div class="concept-number">06</div>
+        <h3>useCallback & useRef</h3>
+        <p>useCallback memoises the update factory. useRef powers the 3D tilt effect on the card — direct DOM access without re-renders.</p>
+        <div class="concept-code">const update = useCallback(
+  field => value => setForm(...),
+[])</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider container"></div>
+
+<!-- Tech Stack -->
+<section class="section">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3.5rem;" class="reveal">
+      <div class="section-tag">🛠️ Tech Stack</div>
+      <h2 class="section-heading">Built with <span>modern web tech</span></h2>
+    </div>
+    <div class="stack-grid">
+      <div class="stack-card reveal reveal-delay-1">
+        <div class="stack-icon">⚛️</div>
+        <div class="stack-name">React 18</div>
+        <div class="stack-desc">Hooks-based components, controlled forms, live state management</div>
+      </div>
+      <div class="stack-card reveal reveal-delay-2">
+        <div class="stack-icon">🎨</div>
+        <div class="stack-name">CSS3</div>
+        <div class="stack-desc">3D transforms, CSS variables, custom animations, glass morphism</div>
+      </div>
+      <div class="stack-card reveal reveal-delay-3">
+        <div class="stack-icon">🔤</div>
+        <div class="stack-name">Babel Standalone</div>
+        <div class="stack-desc">In-browser JSX transpilation — no build step required</div>
+      </div>
+      <div class="stack-card reveal reveal-delay-4">
+        <div class="stack-icon">🌐</div>
+        <div class="stack-name">Vanilla JS</div>
+        <div class="stack-desc">Canvas particles, IntersectionObserver, scroll effects, 3D tilt</div>
+      </div>
+      <div class="stack-card reveal reveal-delay-1">
+        <div class="stack-icon">📸</div>
+        <div class="stack-name">FileReader API</div>
+        <div class="stack-desc">Client-side image loading for photo upload — no server needed</div>
+      </div>
+      <div class="stack-card reveal reveal-delay-2">
+        <div class="stack-icon">🖋️</div>
+        <div class="stack-name">Google Fonts</div>
+        <div class="stack-desc">Playfair Display & Space Grotesk for premium typography</div>
+      </div>
+      <div class="stack-card reveal reveal-delay-3">
+        <div class="stack-icon">📐</div>
+        <div class="stack-name">CSS Grid</div>
+        <div class="stack-desc">Responsive two-column layout that collapses cleanly on mobile</div>
+      </div>
+      <div class="stack-card reveal reveal-delay-4">
+        <div class="stack-icon">🎭</div>
+        <div class="stack-name">CSS Canvas</div>
+        <div class="stack-desc">Floating particle background rendered in a full-screen canvas</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider container"></div>
+
+<!-- Team -->
+<section class="section">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3.5rem;" class="reveal">
+      <div class="section-tag">👥 Team</div>
+      <h2 class="section-heading">The people behind <span>Cardify</span></h2>
+    </div>
+    <div class="team-grid">
+      <div class="glass-card team-card reveal reveal-delay-1">
+        <div class="team-avatar">👨‍💻</div>
+        <div class="team-name">Alex Chen</div>
+        <div class="team-role">Lead Developer</div>
+        <div class="team-bio">React specialist with a passion for teaching front-end concepts through real projects. Built the core generator and component architecture.</div>
+      </div>
+      <div class="glass-card team-card reveal reveal-delay-2">
+        <div class="team-avatar">👩‍🎨</div>
+        <div class="team-name">Maya Patel</div>
+        <div class="team-role">UI/UX Designer</div>
+        <div class="team-bio">Designed the 3D card aesthetic, color system, and interaction patterns. Believes great tools should also look great.</div>
+      </div>
+      <div class="glass-card team-card reveal reveal-delay-3">
+        <div class="team-avatar">👨‍🏫</div>
+        <div class="team-name">Dr. James Liu</div>
+        <div class="team-role">Educational Advisor</div>
+        <div class="team-bio">CS Professor who advised on the React pedagogy — ensuring the codebase clearly demonstrates each concept for learners.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider container"></div>
+
+<!-- Timeline -->
+<section class="section-sm">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3rem;" class="reveal">
+      <div class="section-tag">📅 Journey</div>
+      <h2 class="section-heading">How Cardify <span>came to be</span></h2>
+    </div>
+    <div class="timeline reveal">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">January 2024</div>
+        <div class="tl-title">The idea sparks</div>
+        <div class="tl-text">A student needed a quick mock ID for a presentation. No good free tools existed. The idea for Cardify was born.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">March 2024</div>
+        <div class="tl-title">First prototype</div>
+        <div class="tl-text">First version built as a single HTML file with React via CDN. Basic form + card preview. Shared in a CS Discord — went viral in the community.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">June 2024</div>
+        <div class="tl-title">Multi-page site</div>
+        <div class="tl-text">Expanded to a proper 4-page website with 3D effects, particle animations, and a polished design system.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-date">2026 · Now</div>
+        <div class="tl-title">50,000+ cards generated</div>
+        <div class="tl-text">Used by students across 200+ colleges worldwide. Featured in multiple React learning courses as a reference project.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section-sm">
+  <div class="container">
+    <div class="cta-banner reveal">
+      <div class="orb orb-purple" style="width:250px;height:250px;top:-60px;left:5%;opacity:.2;position:absolute;"></div>
+      <div class="badge badge-purple" style="margin-bottom:1rem;">✦ Open Source</div>
+      <h2>Ready to generate your <span class="grad-full">ID card?</span></h2>
+      <p>Join the 50,000+ students who've already used Cardify.</p>
+      <div class="cta-actions">
+        <a href="generator.html" class="btn btn-primary btn-lg">✦ Generate My ID Card</a>
+        <a href="how-it-works.html" class="btn btn-secondary btn-lg">How It Works</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="nav-logo"><div class="nav-logo-icon">🎓</div> Cardify</div>
+      <p>Professional college ID cards, generated instantly. Built with React, designed for students.</p>
+      <div style="display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap;">
+        <span class="badge badge-gold">React 18</span>
+        <span class="badge badge-neon">No Backend</span>
+        <span class="badge badge-purple">Open Source</span>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Navigation</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="generator.html">Generator</a></li>
+        <li><a href="how-it-works.html">How It Works</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Resources</h4>
+      <ul>
+        <li><a href="generator.html">Create ID Card</a></li>
+        <li><a href="how-it-works.html">Quick Guide</a></li>
+        <li><a href="about.html">Tech Stack</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Cardify · All rights reserved</span>
+    <div class="footer-badges">
+      <span class="footer-badge">🔒 Privacy First</span>
+      <span class="footer-badge">⚡ No Sign-up</span>
+      <span class="footer-badge">✦ 100% Free</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const nb = document.getElementById('navbar');
+  window.addEventListener('scroll', () => nb.classList.toggle('scrolled', window.scrollY > 20));
+  document.getElementById('mobileBtn').addEventListener('click', () => document.getElementById('navLinks').classList.toggle('open'));
+  const glow = document.getElementById('cursorGlow');
+  document.addEventListener('mousemove', e => { glow.style.left=e.clientX+'px'; glow.style.top=e.clientY+'px'; });
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  const canvas = document.getElementById('particle-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  window.addEventListener('resize', () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
+  const pts = Array.from({length:50},()=>({
+    x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,
+    r:Math.random()*1.5+0.4,dx:(Math.random()-.5)*.3,dy:(Math.random()-.5)*.3,
+    op:Math.random()*.4+.05,
+    color: Math.random() > 0.6 ? '200,168,75' : Math.random() > 0.5 ? '124,58,237' : '0,212,255'
+  }));
+  (function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); pts.forEach(p=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${p.color},${p.op})`;ctx.fill();
+    p.x+=p.dx;p.y+=p.dy;
+    if(p.x<0||p.x>canvas.width)p.dx*=-1;if(p.y<0||p.y>canvas.height)p.dy*=-1;
+  });requestAnimationFrame(draw);})();
+</script>
+</body>
+</html>
