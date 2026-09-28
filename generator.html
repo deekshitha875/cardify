@@ -368,6 +368,26 @@
     }
     .btn-download-pdf:hover { opacity: 0.88; }
     .btn-download-pdf:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Print: show only the ID card */
+    @media print {
+      body > *:not(#print-area) { display: none !important; }
+      #print-area {
+        display: block !important;
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+      }
+      #print-area .id-card {
+        width: 85.6mm;
+        max-width: 85.6mm;
+        box-shadow: none !important;
+      }
+      @page { size: 100mm 70mm landscape; margin: 0; }
+    }
   </style>
 </head>
 <body>
@@ -697,28 +717,21 @@
             <button
               className="btn-download-pdf"
               onClick={() => {
+                // Clone the card into a dedicated print container
                 const card = document.querySelector('.id-card');
                 if (!card) return;
-                const btn = document.querySelector('.btn-download-pdf');
-                btn.disabled = true;
-                btn.textContent = '⏳ Generating PDF...';
-                html2pdf()
-                  .set({
-                    margin: 10,
-                    filename: 'college-id-card.pdf',
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 3, useCORS: true },
-                    jsPDF: { unit: 'mm', format: [100, 65], orientation: 'landscape' }
-                  })
-                  .from(card)
-                  .save()
-                  .then(() => {
-                    btn.disabled = false;
-                    btn.innerHTML = '⬇️ Download as PDF';
-                  });
+                let printArea = document.getElementById('print-area');
+                if (!printArea) {
+                  printArea = document.createElement('div');
+                  printArea.id = 'print-area';
+                  document.body.appendChild(printArea);
+                }
+                printArea.innerHTML = '';
+                printArea.appendChild(card.cloneNode(true));
+                window.print();
               }}
             >
-              ⬇️ Download as PDF
+              ⬇️ Download / Print ID Card
             </button>
           </div>
         </div>
